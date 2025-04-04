@@ -1,5 +1,5 @@
 # bundle
-npx esbuild check-csv.js \
+npx esbuild price-table.js \
   --bundle \
   --platform=node \
   --format=cjs \
