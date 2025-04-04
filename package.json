@@ -1,0 +1,23 @@
+{
+  "name": "price-table",
+  "version": "1.0.0",
+  "description": "仮想通貨価格表CSVの作成バイナリ",
+  "homepage": "https://github.com/pictomo/price-table#readme",
+  "bugs": {
+    "url": "https://github.com/pictomo/price-table/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pictomo/price-table.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "price-table.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "postject": "^1.0.0-alpha.6"
+  }
+}
