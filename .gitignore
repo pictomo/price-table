@@ -1,3 +1,6 @@
 node_modules
-price-table
+
+bundled.js
 sea-prep.blob
+price-table
+price-table.csv
