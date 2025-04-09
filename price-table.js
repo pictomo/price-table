@@ -15,18 +15,19 @@ if (!fs.existsSync(filePath)) {
 // ② CSVファイルを読み込む
 const csvData = fs.readFileSync(filePath, "utf-8");
 
-// ③ パースして日付をキーにしたオブジェクトに変換
-const records = parse(csvData, {
-  columns: true,
+// ③ パース（ヘッダを含む2次元配列として出力）
+const rows = parse(csvData, {
+  columns: false, // 配列として読み込む
   skip_empty_lines: true,
 });
 
-const result = {};
-for (const row of records) {
-  const { date, ...rest } = row;
-  result[date] = Object.fromEntries(
-    Object.entries(rest).map(([key, value]) => [key, Number(value)])
+// ④ 数値を文字列から数値に変換（1行目はヘッダーなのでスキップ）
+const converted = [rows[0]]; // ヘッダー行そのまま
+
+for (let i = 1; i < rows.length; i++) {
+  converted.push(
+    rows[i].map((val, idx) => (idx === 0 ? Number(val) : Number(val)))
   );
 }
 
-console.log(result);
+console.log(converted);
