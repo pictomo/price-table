@@ -2,32 +2,65 @@ const fs = require("fs");
 const path = require("path");
 const { parse } = require("csv-parse/sync");
 
+const now = new Date();
+
+// ファイルパスの定義
 const filePath = path.join(__dirname, "price-table.csv");
 
-// ① ファイルがなければ作成（サンプルデータ付き）
+// 二次元配列をCSV形式の文字列に変換する関数
+list2csv = (list) => {
+  return list.map((row) => row.join(",")).join("\n") + "\n";
+};
+
+// price-table.csv がなければ新規作成
 if (!fs.existsSync(filePath)) {
-  const header =
-    "date,bitcoin,ethereum\n20250401,60000,40000\n20250402,50000,40000\n";
-  fs.writeFileSync(filePath, header, "utf-8");
+  // デフォルトの通貨
+  const defaultCurrencies = ["bitcoin", "ethereum", "litecoin", "dogecoin"];
+
+  // 初期配列の定義
+  const initialData = [["date", ...defaultCurrencies]];
+
+  // 初期データをファイルに保存
+  const csvString = list2csv(initialData);
+  fs.writeFileSync(filePath, csvString, "utf-8");
   console.log("price-table.csv を新規作成しました。");
 }
 
-// ② CSVファイルを読み込む
+// CSVファイルを読み込む
 const csvData = fs.readFileSync(filePath, "utf-8");
 
-// ③ パース（ヘッダを含む2次元配列として出力）
-const rows = parse(csvData, {
-  columns: false, // 配列として読み込む
+// パースして2次元配列として出力
+const data = parse(csvData, {
+  columns: false,
   skip_empty_lines: true,
+  cast: (value) => {
+    return value === "" ? null : value;
+  },
 });
 
-// ④ 数値を文字列から数値に変換（1行目はヘッダーなのでスキップ）
-const converted = [rows[0]]; // ヘッダー行そのまま
+const currencyCount = data[0].length - 1;
 
-for (let i = 1; i < rows.length; i++) {
-  converted.push(
-    rows[i].map((val, idx) => (idx === 0 ? Number(val) : Number(val)))
-  );
+// 行が一つもなければ、本日の行を追加
+if (data.length === 1) {
+  const newRow = [
+    now.toLocaleDateString("sv-SE"),
+    ...Array(currencyCount).fill(null),
+  ];
+  data.push(newRow);
 }
 
-console.log(converted);
+// 本日までの行を追加
+let lastDate = new Date(data[data.length - 1][0]);
+lastDate.setDate(lastDate.getDate() + 1);
+while (lastDate < now) {
+  const newRow = [
+    lastDate.toLocaleDateString("sv-SE"),
+    ...Array(currencyCount).fill(null),
+  ];
+  data.push(newRow);
+  lastDate.setDate(lastDate.getDate() + 1);
+}
+
+// ファイルに保存
+const csvString = list2csv(data);
+fs.writeFileSync(filePath, csvString, "utf-8");
