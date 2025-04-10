@@ -9,7 +9,7 @@ const { parse } = require("csv-parse/sync");
   const baseCurrency = "jpy";
   // coingecko API のレートリミット ~30calls/minute
   // https://docs.coingecko.com/reference/common-errors-rate-limit#rate-limit
-  const requestSpeed = 10000;
+  const baseRequestSpeed = 12000;
 
   const now = new Date();
 
@@ -29,7 +29,7 @@ const { parse } = require("csv-parse/sync");
     // 初期データをファイルに保存
     const csvString = list2csv(initialData);
     fs.writeFileSync(filePath, csvString, "utf-8");
-    console.log("price-table.csv を新規作成しました。");
+    console.log("'price-table.csv' created");
   }
 
   // CSVファイルを読み込む
@@ -68,26 +68,51 @@ const { parse } = require("csv-parse/sync");
   }
 
   // 価格データを挿入
+  let firstItr = true;
   for (let i = 1; i < data.length; i++) {
     date = new Date(data[i][0]);
     for (let currencyNum = 1; currencyNum <= currencyCount; currencyNum++) {
       // データがない場合は null を挿入
       if (data[i][currencyNum] === null) {
-        await new Promise((resolve) => setTimeout(resolve, requestSpeed));
-        response = await fetch(
-          `https://api.coingecko.com/api/v3/coins/${
-            data[0][currencyNum]
-          }/history?date=${date.toLocaleDateString("brx-IN")}`
-        );
-        const json = await response.json();
-        console.log(json);
-        price = json.market_data.current_price[baseCurrency];
-        data[i][currencyNum] = price;
+        let requestSpeed = baseRequestSpeed;
+        while (true) {
+          let response;
+          try {
+            if (firstItr) {
+              firstItr = false;
+            } else {
+              console.log(`Waiting ${requestSpeed.toLocaleString()} msec...`);
+              await new Promise((resolve) => setTimeout(resolve, requestSpeed));
+            }
+            response = await fetch(
+              `https://api.coingecko.com/api/v3/coins/${
+                data[0][currencyNum]
+              }/history?date=${date.toLocaleDateString("brx-IN")}`
+            );
+            const json = await response.json();
+            const price = json.market_data.current_price[baseCurrency];
+            data[i][currencyNum] = price;
+            break;
+          } catch (error) {
+            if (response.status === 429) {
+              // レートリミットに引っかかった場合は、リクエストを遅延させる
+              requestSpeed *= 2;
+              console.log(
+                `Rate limit exceeded. Waiting ${requestSpeed.toLocaleString()} msec...`
+              );
+            } else {
+              // その他のエラーの場合は、responseを表示して終了
+              console.error("Error:", error);
+              console.error("Response:", response);
+              process.exit(1);
+            }
+          }
+        }
       }
+
+      // データごとにファイルに保存
+      const csvString = list2csv(data);
+      fs.writeFileSync(filePath, csvString, "utf-8");
     }
   }
-
-  // ファイルに保存
-  const csvString = list2csv(data);
-  fs.writeFileSync(filePath, csvString, "utf-8");
 })();
