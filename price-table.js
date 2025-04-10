@@ -6,6 +6,7 @@ const { parse } = require("csv-parse/sync");
 const defaultCurrencies = ["bitcoin", "ethereum", "litecoin", "dogecoin"];
 // ベース通貨
 const baseCurrency = "jpy";
+// RateLimit回避のためのリクエスト間隔
 // coingecko API のレートリミット ~30calls/minute
 // https://docs.coingecko.com/reference/common-errors-rate-limit#rate-limit
 const baseRequestSpeed = 12000;
