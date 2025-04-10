@@ -2,15 +2,15 @@ const fs = require("fs");
 const path = require("path");
 const { parse } = require("csv-parse/sync");
 
-(async () => {
-  // デフォルトの通貨
-  const defaultCurrencies = ["bitcoin", "ethereum", "litecoin", "dogecoin"];
-  // ベース通貨
-  const baseCurrency = "jpy";
-  // coingecko API のレートリミット ~30calls/minute
-  // https://docs.coingecko.com/reference/common-errors-rate-limit#rate-limit
-  const baseRequestSpeed = 12000;
+// デフォルトの通貨
+const defaultCurrencies = ["bitcoin", "ethereum", "litecoin", "dogecoin"];
+// ベース通貨
+const baseCurrency = "jpy";
+// coingecko API のレートリミット ~30calls/minute
+// https://docs.coingecko.com/reference/common-errors-rate-limit#rate-limit
+const baseRequestSpeed = 12000;
 
+(async () => {
   const now = new Date();
 
   // ファイルパスの定義
@@ -104,6 +104,7 @@ const { parse } = require("csv-parse/sync");
               // その他のエラーの場合は、responseを表示して終了
               console.error("Error:", error);
               console.error("Response:", response);
+              console.error("[Process ended with an Error]");
               process.exit(1);
             }
           }
