@@ -34,3 +34,6 @@
 ### Excel以外による操作(非推奨)
 未検証。
 TextEditorを使う場合は、カンマの数に注意して行うこと。
+
+# その他の情報
+[ソース](https://github.com/pictomo/price-table)
